@@ -2,8 +2,8 @@ package money
 
 import "errors"
 
-// ErrWrongCurrencyName -- Wrong Currency Name
-var ErrWrongCurrencyName = errors.New("Error: wrong currency name")
+// ErrBadCurrencyName -- Wrong Currency Name
+var ErrBadCurrencyName = errors.New("Error: bad currency name")
 
 // ErrNoExchangeRate -- No Exchange Rate
 var ErrNoExchangeRate = errors.New("Error: no exchange rate")

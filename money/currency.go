@@ -13,28 +13,51 @@ type Currency struct {
 const allowedChars = "ABCDEFGHIJKLMNOPQRSTUVDXYZ"
 
 var currencies = map[string]*Currency{}
+var aliases = map[string]string{}
 
-// GetCurrency -- currency constructor
+// GetCurrency -- currency getter
 func GetCurrency(name, alias string) (*Currency, error) {
 	// Check name to be valid
 	// Valid name is of length 3
-	if len(name) != 3 {
-		return nil, ErrWrongCurrencyName
+	if name != "" && alias != "" {
+		if len(name) != 3 {
+			return nil, ErrBadCurrencyName
+		}
+
+		// Valid name contains only uppercase latin characters
+		for _, r := range name {
+			if !strings.ContainsRune(allowedChars, r) {
+				return nil, ErrBadCurrencyName
+			}
+		}
 	}
 
-	// Valid name contains only uppercase latin characters
-	for _, r := range name {
-		if !strings.ContainsRune(allowedChars, r) {
-			return nil, ErrWrongCurrencyName
-		}
+	if name == "" {
+		name = aliases[alias]
 	}
 
 	if currency, ok := currencies[name]; ok {
 		return currency, nil
 	}
 
-	if currency, ok := currencies[alias]; ok {
-		return currency, nil
+	return newCurrency(name, alias), nil
+}
+
+// GetCurrencyByName Returns Currency By Name
+func GetCurrencyByName(name string) (*Currency, error) {
+	return GetCurrency(name, "")
+}
+
+// GetCurrencyByAlias Returns Currency By Alias
+func GetCurrencyByAlias(alias string) (*Currency, error) {
+	return GetCurrency("", alias)
+}
+
+func newCurrency(name, alias string) *Currency {
+	if alias == "" {
+		alias = name
+	} else {
+		aliases[alias] = name
 	}
 
 	currency := &Currency{
@@ -42,13 +65,9 @@ func GetCurrency(name, alias string) (*Currency, error) {
 		alias: alias,
 	}
 
-	if name == "" {
-		name = alias
-	}
-
 	currencies[name] = currency
 
-	return currency, nil
+	return currency
 }
 
 // GetName returns currency name
@@ -92,3 +111,11 @@ func SetExchangeRate(from *Currency, to *Currency, value float64) error {
 
 	return nil
 }
+
+// Currencies
+var (
+	USD = newCurrency("USD", "$")
+	EUR = newCurrency("EUR", "€")
+	RUB = newCurrency("RUB", "")
+	BYN = newCurrency("BYN", "Br")
+)
