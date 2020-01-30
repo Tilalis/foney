@@ -11,8 +11,8 @@ type Money struct {
 	currency *Currency
 }
 
-// NewMoney constructs Money
-func NewMoney(value float64, currency *Currency) *Money {
+// New constructs Money
+func New(value float64, currency *Currency) *Money {
 	return &Money{
 		value:    round(value, 2),
 		currency: currency,
@@ -58,7 +58,7 @@ func (m *Money) Mul(value float64) (*Money, error) {
 // Div divides
 func (m *Money) Div(value float64) (*Money, error) {
 	if value == 0 {
-		return nil, ErrDivisionOnZero
+		return nil, ErrDivisionByZero
 	}
 
 	return &Money{

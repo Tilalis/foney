@@ -3,34 +3,43 @@ package main
 import (
 	"bufio"
 	"fmt"
-	interpreter "github.com/Tilalis/foney.go/interpreter"
-	money "github.com/Tilalis/foney.go/money"
 	"os"
+
+	interpreter "foney/interpreter"
 )
 
 func main() {
+	const prompt = "foney> "
+
+	var (
+		debug = false
+		input string
+	)
+
 	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Print("foney.go> ")
+	fmt.Print(prompt)
+
 	for scanner.Scan() {
-		input := scanner.Text()
-		lexer, _ := interpreter.NewLexer(input)
+		input = scanner.Text()
+		result, err := interpreter.InterpretString(input)
 
-		for token := lexer.Next(); token != nil; token = lexer.Next() {
-			fmt.Println(token)
+		if err != nil {
+			fmt.Printf("%v\n", err)
 		}
-		fmt.Print("foney.go> ")
+
+		if result != nil {
+			fmt.Printf("%v\n", result)
+		}
+
+		if debug {
+			lexer, err := interpreter.NewLexer(input)
+			if err == nil {
+				for token, _ := lexer.Next(); token != nil; token, _ = lexer.Next() {
+					fmt.Println(token)
+				}
+			}
+		}
+
+		fmt.Print(prompt)
 	}
-
-	input := "(5$ + Br15) / 2 - 5USD"
-	lexer, _ := interpreter.NewLexer(input)
-
-	for token := lexer.Next(); token != nil; token = lexer.Next() {
-		fmt.Println(token)
-	}
-
-	usd, _ := money.GetCurrency("USD", "$")
-	ten := money.NewMoney(12.3456, usd)
-
-	fmt.Printf("%v", ten)
-
 }

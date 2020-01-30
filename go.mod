@@ -1,3 +1,3 @@
-module github.com/Tilalis/foney.go
+module foney
 
 go 1.13

@@ -2,6 +2,7 @@ package interpreter
 
 import "fmt"
 
+// Token Types
 const (
 	NUMBER = iota
 	MONEY  = iota
@@ -21,6 +22,7 @@ const (
 	EOF       = iota
 )
 
+// Token represents Token
 type Token struct {
 	Type  int
 	Value interface{}

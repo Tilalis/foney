@@ -1,15 +1,12 @@
 package money
 
-import "errors"
+import (
+	"errors"
+)
 
-// ErrBadCurrencyName -- Wrong Currency Name
-var ErrBadCurrencyName = errors.New("Error: bad currency name")
-
-// ErrNoExchangeRate -- No Exchange Rate
-var ErrNoExchangeRate = errors.New("Error: no exchange rate")
-
-// ErrCantConvertToSameCurrency -- Can't convery to same currency
-var ErrCantConvertToSameCurrency = errors.New("Error: can't convert to same currency")
-
-// ErrDivisionOnZero -- Division on zero
-var ErrDivisionOnZero = errors.New("Error: division on zezo")
+// Base Errors
+var (
+	ErrBadCurrencyName = errors.New("Bad currency name")
+	ErrNoExchangeRate  = errors.New("No exchange rate")
+	ErrDivisionByZero  = errors.New("Division by zezo")
+)

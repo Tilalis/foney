@@ -19,21 +19,26 @@ var aliases = map[string]string{}
 func GetCurrency(name, alias string) (*Currency, error) {
 	// Check name to be valid
 	// Valid name is of length 3
-	if name != "" && alias != "" {
+	if name != "" {
 		if len(name) != 3 {
-			return nil, ErrBadCurrencyName
+			return nil, fmt.Errorf("%w: '%s'", ErrBadCurrencyName, name)
 		}
 
 		// Valid name contains only uppercase latin characters
 		for _, r := range name {
 			if !strings.ContainsRune(allowedChars, r) {
-				return nil, ErrBadCurrencyName
+				return nil, fmt.Errorf("%w: '%s'", ErrBadCurrencyName, name)
 			}
 		}
 	}
 
 	if name == "" {
-		name = aliases[alias]
+		var ok bool
+		name, ok = aliases[alias]
+
+		if !ok {
+			return nil, fmt.Errorf("%w: '%s'", ErrBadCurrencyName, alias)
+		}
 	}
 
 	if currency, ok := currencies[name]; ok {
@@ -98,7 +103,7 @@ func GetExchangeRate(from *Currency, to *Currency) (float64, error) {
 	}
 
 	// TODO: Add getting exchangerate from https://www.currconv.com/
-	return 0, ErrNoExchangeRate
+	return 0, fmt.Errorf("%w: %s to %s", ErrNoExchangeRate, from.name, to.name)
 }
 
 // SetExchangeRate sets exchange rate

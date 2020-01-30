@@ -1,6 +1,10 @@
 package interpreter
 
 import (
+	"errors"
+	"fmt"
+	money "foney/money"
+
 	"io"
 	"strconv"
 	"strings"
@@ -14,6 +18,7 @@ type Lexer struct {
 	input    *strings.Reader
 	finished bool
 	current  rune
+	previous rune
 }
 
 // NewLexer -- constructor for Lexer type
@@ -21,8 +26,8 @@ func NewLexer(input string) (*Lexer, error) {
 	reader := strings.NewReader(input)
 	current, _, err := reader.ReadRune()
 
-	if err == io.EOF {
-		return nil, ErrEmptyInput
+	if errors.Is(err, io.EOF) {
+		return nil, fmt.Errorf("Error: %w", ErrEmptyInput)
 	}
 
 	return &Lexer{
@@ -34,9 +39,9 @@ func NewLexer(input string) (*Lexer, error) {
 
 // Next -- method of Lexer, returns next Token
 // Returns nil after EOF
-func (lexer *Lexer) Next() *Token {
+func (lexer *Lexer) Next() (*Token, error) {
 	if lexer.finished {
-		return nil
+		return nil, nil
 	}
 
 	if lexer.current == 0 {
@@ -44,15 +49,19 @@ func (lexer *Lexer) Next() *Token {
 		return &Token{
 			Type:  EOF,
 			Value: nil,
-		}
+		}, nil
 	}
 
 	lexer.skipSpaces()
 
-	symbol := lexer.symbol()
+	symbol, err := lexer.symbol()
+
+	if err != nil {
+		return nil, err
+	}
 
 	if symbol != nil {
-		return symbol
+		return symbol, nil
 	}
 
 	var tokenType int
@@ -86,10 +95,10 @@ func (lexer *Lexer) Next() *Token {
 		return &Token{
 			Type:  tokenType,
 			Value: strconv.QuoteRune(value),
-		}
+		}, nil
 	}
 
-	return nil
+	return nil, nil
 }
 
 func (lexer *Lexer) skipSpaces() {
@@ -100,7 +109,7 @@ func (lexer *Lexer) skipSpaces() {
 
 func (lexer *Lexer) read() {
 	ch, _, err := lexer.input.ReadRune()
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		ch = 0
 	}
 	lexer.current = ch
@@ -121,7 +130,7 @@ func (lexer *Lexer) accumulateWhile(predicate runePredicate) string {
 	return builder.String()
 }
 
-func (lexer *Lexer) symbol() *Token {
+func (lexer *Lexer) symbol() (*Token, error) {
 	digitsPredicate := func(r rune) bool {
 		return unicode.IsDigit(r) || r == '.'
 	}
@@ -138,25 +147,45 @@ func (lexer *Lexer) symbol() *Token {
 	}
 
 	if digits != "" && alphanumeric != "" {
+		amount, currencyName := digits, alphanumeric
+
+		value, err := strconv.ParseFloat(amount, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		currency, err := money.GetCurrencyByName(currencyName)
+		if errors.Is(err, money.ErrBadCurrencyName) {
+			currency, err = money.GetCurrencyByAlias(currencyName)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		return &Token{
 			Type:  MONEY,
-			Value: digits + alphanumeric,
-		}
+			Value: money.New(value, currency),
+		}, nil
 	}
 
 	if digits != "" {
+		value, err := strconv.ParseFloat(digits, 64)
+		if err != nil {
+			return nil, err
+		}
+
 		return &Token{
 			Type:  NUMBER,
-			Value: digits,
-		}
+			Value: value,
+		}, nil
 	}
 
 	if alphanumeric != "" {
 		return &Token{
 			Type:  SYMBOL,
 			Value: alphanumeric,
-		}
+		}, nil
 	}
 
-	return nil
+	return nil, nil
 }

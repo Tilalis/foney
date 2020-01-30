@@ -1,6 +1,7 @@
 package money
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 )
@@ -10,7 +11,7 @@ var nonExistentCurrency, _ = GetCurrency("NEC", "")
 var _ = SetExchangeRate(USD, BYN, 2)
 
 func TestString(t *testing.T) {
-	money := NewMoney(12.45, USD)
+	money := New(12.45, USD)
 	value := money.String()
 	if value != "12.45USD" {
 		t.Errorf("Got %s, expected 12.45USD", value)
@@ -21,7 +22,7 @@ func TestString(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	money := NewMoney(12.345457547547, USD)
+	money := New(12.345457547547, USD)
 
 	checkPrecision := fmt.Sprintf("%.3f", money.value)
 	if checkPrecision != "12.350" {
@@ -34,7 +35,7 @@ func TestNew(t *testing.T) {
 
 // Test Mul too
 func TestConvert(t *testing.T) {
-	money := NewMoney(10, USD)
+	money := New(10, USD)
 	converted, err := money.Convert(BYN)
 
 	if err != nil {
@@ -51,7 +52,7 @@ func TestConvert(t *testing.T) {
 }
 
 func TestConvertError(t *testing.T) {
-	money := NewMoney(10, USD)
+	money := New(10, USD)
 	converted, err := money.Convert(nonExistentCurrency)
 
 	if converted != nil && err == nil {
@@ -59,7 +60,7 @@ func TestConvertError(t *testing.T) {
 		return
 	}
 
-	if err != ErrNoExchangeRate {
+	if !errors.Is(err, ErrNoExchangeRate) {
 		t.Errorf("Got error other than ErrNoExchangeRate: %v", err)
 		return
 	}
@@ -68,7 +69,7 @@ func TestConvertError(t *testing.T) {
 }
 
 func TestDiv(t *testing.T) {
-	money := NewMoney(10, USD)
+	money := New(10, USD)
 	divided, err := money.Div(2.5)
 
 	if err != nil {
@@ -85,7 +86,7 @@ func TestDiv(t *testing.T) {
 }
 
 func TestDivError(t *testing.T) {
-	money := NewMoney(10, USD)
+	money := New(10, USD)
 	divided, err := money.Div(0)
 
 	if divided != nil && err == nil {
@@ -93,7 +94,7 @@ func TestDivError(t *testing.T) {
 		return
 	}
 
-	if err != ErrDivisionOnZero {
+	if !errors.Is(err, ErrDivisionByZero) {
 		t.Errorf("Got error other than ErrDivisionOnZero: %v", err)
 		return
 	}
@@ -102,8 +103,8 @@ func TestDivError(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	tenUsd := NewMoney(10.0, USD)
-	twentyByn := NewMoney(20.0, BYN)
+	tenUsd := New(10.0, USD)
+	twentyByn := New(20.0, BYN)
 
 	result, err := tenUsd.Add(twentyByn)
 
@@ -122,8 +123,8 @@ func TestAdd(t *testing.T) {
 }
 
 func TestAddError(t *testing.T) {
-	tenUsd := NewMoney(10.0, USD)
-	twentySomething := NewMoney(20.0, nonExistentCurrency)
+	tenUsd := New(10.0, USD)
+	twentySomething := New(20.0, nonExistentCurrency)
 
 	result, err := tenUsd.Add(twentySomething)
 
@@ -132,7 +133,7 @@ func TestAddError(t *testing.T) {
 		return
 	}
 
-	if err != ErrNoExchangeRate {
+	if !errors.Is(err, ErrNoExchangeRate) {
 		t.Errorf("Got error other than ErrNoExchangeRate: %v", err)
 		return
 	}
@@ -141,8 +142,8 @@ func TestAddError(t *testing.T) {
 }
 
 func TestSub(t *testing.T) {
-	twentyByn := NewMoney(23.446, BYN)
-	tenUsd := NewMoney(10.0, USD)
+	twentyByn := New(23.446, BYN)
+	tenUsd := New(10.0, USD)
 
 	result, err := twentyByn.Sub(tenUsd)
 
@@ -160,8 +161,8 @@ func TestSub(t *testing.T) {
 }
 
 func TestSubError(t *testing.T) {
-	tenUsd := NewMoney(10.0, USD)
-	twentySomething := NewMoney(20.0, nonExistentCurrency)
+	tenUsd := New(10.0, USD)
+	twentySomething := New(20.0, nonExistentCurrency)
 
 	result, err := tenUsd.Sub(twentySomething)
 
@@ -170,7 +171,7 @@ func TestSubError(t *testing.T) {
 		return
 	}
 
-	if err != ErrNoExchangeRate {
+	if !errors.Is(err, ErrNoExchangeRate) {
 		t.Errorf("Got error other than ErrNoExchangeRate: %v", err)
 		return
 	}
@@ -179,7 +180,7 @@ func TestSubError(t *testing.T) {
 }
 
 func TestConvertSame(t *testing.T) {
-	tenUsd := NewMoney(10, USD)
+	tenUsd := New(10, USD)
 	converted, err := tenUsd.Convert(USD)
 
 	if converted != tenUsd {
@@ -235,7 +236,7 @@ func TestCurrencyTooLongNameError(t *testing.T) {
 		return
 	}
 
-	if err != ErrBadCurrencyName {
+	if !errors.Is(err, ErrBadCurrencyName) {
 		t.Errorf("Got error other than ErrBadCurrencyName: %v", err)
 		return
 	}
@@ -251,7 +252,7 @@ func TestCurrencyBadRunesError(t *testing.T) {
 		return
 	}
 
-	if err != ErrBadCurrencyName {
+	if !errors.Is(err, ErrBadCurrencyName) {
 		t.Errorf("Got error other than ErrBadCurrencyName: %v", err)
 		return
 	}
