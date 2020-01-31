@@ -15,15 +15,14 @@ type runePredicate func(rune) bool
 
 // Lexer type
 type Lexer struct {
-	input    *strings.Reader
+	reader   io.RuneReader
 	finished bool
 	current  rune
 	previous rune
 }
 
 // NewLexer -- constructor for Lexer type
-func NewLexer(input string) (*Lexer, error) {
-	reader := strings.NewReader(input)
+func NewLexer(reader io.RuneReader) (*Lexer, error) {
 	current, _, err := reader.ReadRune()
 
 	if errors.Is(err, io.EOF) {
@@ -31,7 +30,7 @@ func NewLexer(input string) (*Lexer, error) {
 	}
 
 	return &Lexer{
-		input:    reader,
+		reader:   reader,
 		finished: false,
 		current:  current,
 	}, nil
@@ -64,7 +63,7 @@ func (lexer *Lexer) Next() (*Token, error) {
 		return symbol, nil
 	}
 
-	var tokenType int
+	var tokenType TokenType
 
 	switch lexer.current {
 	case '+':
@@ -108,7 +107,7 @@ func (lexer *Lexer) skipSpaces() {
 }
 
 func (lexer *Lexer) read() {
-	ch, _, err := lexer.input.ReadRune()
+	ch, _, err := lexer.reader.ReadRune()
 	if errors.Is(err, io.EOF) {
 		ch = 0
 	}

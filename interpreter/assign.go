@@ -1,6 +1,9 @@
 package interpreter
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 // SymbolTable is just SymbolTable, like it's name says and that's all.
 // Yeah, really. That's simple. Just what it's name says.
@@ -9,9 +12,15 @@ import "fmt"
 //
 // Well, maybe one can argue that `SymbolTable` is not good enough to describe the purpose of this type inside of interpreter package...
 // But what fucking else could this type be?
-type SymbolTable map[string]interface{}
+type SymbolTable struct {
+	values map[string]interface{}
+	types  map[string]TypeInfo
+}
 
-var symbolTable SymbolTable = make(map[string]interface{})
+var symbolTable SymbolTable = SymbolTable{
+	values: make(map[string]interface{}),
+	types:  make(map[string]TypeInfo),
+}
 
 // GetSymbolTable returns SymbolTable
 // It returns same instance every time, if one is not costructed, then it custructs it.
@@ -23,7 +32,7 @@ func GetSymbolTable() SymbolTable {
 // Get returns Symbol Value from table
 // Returns NoSuchSymbol error is no name is present in SymbolTable
 func (s *SymbolTable) Get(name string) (interface{}, error) {
-	value, ok := symbolTable[name]
+	value, ok := s.values[name]
 
 	if !ok {
 		return nil, fmt.Errorf("%w '%s'", ErrNoSuchSymbol, name)
@@ -32,9 +41,31 @@ func (s *SymbolTable) Get(name string) (interface{}, error) {
 	return value, nil
 }
 
+// GetType gets type
+func (s *SymbolTable) GetType(name string) (TypeInfo, error) {
+	value, ok := s.types[name]
+
+	if !ok {
+		return 0, fmt.Errorf("%w '%s'", ErrNoSuchSymbol, name)
+	}
+
+	return value, nil
+}
+
 // Set Sets Symbol
 func (s *SymbolTable) Set(name string, value interface{}) {
-	symbolTable[name] = value
+	s.values[name] = value
+	var typeOf = reflect.Indirect(reflect.ValueOf(value)).Type()
+	var typeName = typeOf.Name()
+
+	switch typeName {
+	case "float64":
+		s.types[name] = NUMBERTYPE
+	case "Money":
+		s.types[name] = MONEYTYPE
+	default:
+		s.types[name] = DYNAMIC
+	}
 }
 
 // Assign represents assign operation
@@ -55,4 +86,19 @@ func (a *Assign) Traverse() (interface{}, error) {
 	symbolTable.Set(name, value)
 
 	return value, nil
+}
+
+// Compile compiles
+func (a *Assign) Compile(b *Instruction) (*Instruction, error) {
+	b, err := a.Value.Compile(b)
+
+	if err != nil {
+		return nil, err
+	}
+
+	name := a.Symbol.Token.Value.(string)
+
+	return b.Append(NewInstruction(SET, name)), nil
+
+	// return nil, ErrUnsoppertedOperatrion
 }

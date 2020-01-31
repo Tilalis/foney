@@ -37,7 +37,7 @@ func (p *Parser) Parse() (AST, error) {
 	return node, nil
 }
 
-func (p *Parser) eat(tokenType int) error {
+func (p *Parser) eat(tokenType TokenType) error {
 	if p.current.Type != tokenType {
 		return fmt.Errorf("%w on %v", ErrSyntaxError, p.current)
 	}

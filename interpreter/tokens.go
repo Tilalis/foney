@@ -2,34 +2,37 @@ package interpreter
 
 import "fmt"
 
+// TokenType type
+type TokenType int
+
 // Token Types
 const (
-	NUMBER = iota
-	MONEY  = iota
+	NUMBER TokenType = iota
+	MONEY  TokenType = iota
 
-	PLUS  = iota
-	MINUS = iota
-	MUL   = iota
-	DIV   = iota
+	PLUS  TokenType = iota
+	MINUS TokenType = iota
+	MUL   TokenType = iota
+	DIV   TokenType = iota
 
-	LPAREN = iota
-	RPAREN = iota
+	LPAREN TokenType = iota
+	RPAREN TokenType = iota
 
-	SYMBOL = iota
-	ASSIGN = iota
+	SYMBOL TokenType = iota
+	ASSIGN TokenType = iota
 
-	DELIMETER = iota
-	EOF       = iota
+	DELIMETER TokenType = iota
+	EOF       TokenType = iota
 )
 
 // Token represents Token
 type Token struct {
-	Type  int
+	Type  TokenType
 	Value interface{}
 }
 
 func (t *Token) String() string {
-	typeName := map[int]string{
+	typeName := map[TokenType]string{
 		NUMBER:    "NUMBER",
 		MONEY:     "MONEY",
 		PLUS:      "PLUS",
