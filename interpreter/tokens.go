@@ -7,22 +7,23 @@ type TokenType int
 
 // Token Types
 const (
-	NUMBER TokenType = iota
-	MONEY  TokenType = iota
+	EOF TokenType = iota
 
-	PLUS  TokenType = iota
-	MINUS TokenType = iota
-	MUL   TokenType = iota
-	DIV   TokenType = iota
+	NUMBER
+	MONEY
 
-	LPAREN TokenType = iota
-	RPAREN TokenType = iota
+	PLUS
+	MINUS
+	MUL
+	DIV
 
-	SYMBOL TokenType = iota
-	ASSIGN TokenType = iota
+	LPAREN
+	RPAREN
 
-	DELIMETER TokenType = iota
-	EOF       TokenType = iota
+	SYMBOL
+	ASSIGN
+
+	DELIMETER
 )
 
 // Token represents Token
@@ -33,7 +34,6 @@ type Token struct {
 
 func (t *Token) String() string {
 	typeName := map[TokenType]string{
-		NUMBER:    "NUMBER",
 		MONEY:     "MONEY",
 		PLUS:      "PLUS",
 		MINUS:     "MINUS",
@@ -45,6 +45,7 @@ func (t *Token) String() string {
 		ASSIGN:    "ASSIGN",
 		DELIMETER: "DELIMETER",
 		EOF:       "EOF",
+		NUMBER:    "NUMBER",
 	}[t.Type]
 
 	return fmt.Sprintf("Token(%s, %v)", typeName, t.Value)

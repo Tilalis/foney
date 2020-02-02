@@ -22,7 +22,9 @@ func NewVM(start *Instruction) *VirtualMachine {
 type InstructionHandler func(interface{}) error
 
 var handlers = map[ByteCodeInstruction]InstructionHandler{
-	PUSH:  push,
+	PUSH: push,
+	POP:  pop,
+
 	PUSHF: push,
 	PUSHM: push,
 
@@ -88,6 +90,19 @@ func set(argument interface{}) error {
 	stackSize := len(stack)
 	element := stack[stackSize-1]
 
+	symbolTable.Set(name, element)
+
+	return nil
+}
+
+func pop(argument interface{}) error {
+	name, ok := argument.(string)
+
+	if !ok {
+		return ErrNoSuchSymbol
+	}
+
+	element := _pop()
 	symbolTable.Set(name, element)
 
 	return nil

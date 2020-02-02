@@ -27,7 +27,8 @@ func main() {
 
 	if *inDebug {
 		// (1$ / 3) + (5$ * 2)  -- fails because of trailing space
-		scanner = bufio.NewScanner(strings.NewReader("a = 5\na*a + a"))
+		// febf=300$\nfebf = febf - 200$ -- some fail in calculations
+		scanner = bufio.NewScanner(strings.NewReader("a = 5\na = a*a + a"))
 	} else {
 		scanner = bufio.NewScanner(os.Stdin)
 	}
