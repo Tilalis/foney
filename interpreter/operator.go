@@ -22,7 +22,7 @@ func (bo *BinaryOperator) moneyAndMoney(left, right *money.Money) (*money.Money,
 	return nil, fmt.Errorf("%w: %v between %v and %v", ErrOperationNotDefined, bo.Operator.Value, left, right)
 }
 
-func (bo *BinaryOperator) moneyAdNumber(left *money.Money, right float64) (*money.Money, error) {
+func (bo *BinaryOperator) moneyAndNumber(left *money.Money, right float64) (*money.Money, error) {
 	switch bo.Operator.Type {
 	case MUL:
 		return left.Mul(right)
@@ -93,7 +93,11 @@ func (bo *BinaryOperator) Traverse() (interface{}, error) {
 	}
 
 	if leftIsMoney && rightIsFloat {
-		return bo.moneyAdNumber(leftMoney, rightFloat)
+		return bo.moneyAndNumber(leftMoney, rightFloat)
+	}
+
+	if leftIsFloat && rightIsMoney {
+		return bo.moneyAndNumber(rightMoney, leftFloat)
 	}
 
 	if leftIsFloat && rightIsFloat {
