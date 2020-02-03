@@ -1,8 +1,9 @@
 package money
 
-import "fmt"
-
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // Currency represents currency
 type Currency struct {

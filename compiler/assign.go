@@ -1,4 +1,4 @@
-package interpreter
+package compiler
 
 // Assign represents assign operation
 type Assign struct {
@@ -7,15 +7,15 @@ type Assign struct {
 }
 
 // Traverse traverse assign
-func (a *Assign) Traverse() (interface{}, error) {
-	name := a.Symbol.Token.Value.(string)
+func (a *Assign) Traverse() (*Instruction, error) {
 	value, err := a.Value.Traverse()
 
 	if err != nil {
 		return nil, err
 	}
 
-	globalSymbolTable.Set(name, value)
+	name := a.Symbol.Token.Value.(string)
+	value.Append(NewInstruction(SET, name))
 
 	return value, nil
 }

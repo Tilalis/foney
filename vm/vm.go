@@ -1,54 +1,46 @@
-package interpreter
+package vm
 
-import "foney/money"
+import (
+	"github.com/Tilalis/foney/compiler"
+	"github.com/Tilalis/foney/money"
+)
 
 var stack = make([]interface{}, 0)
 
-// VirtualMachine represents vm
-type VirtualMachine struct {
-	ip *Instruction
-	sp int
-}
-
-// NewVM returns new VM
-func NewVM(start *Instruction) *VirtualMachine {
-	return &VirtualMachine{
-		ip: start,
-		sp: 0,
-	}
-}
+// VMSymbolTable Global VM Symbol Table
+var VMSymbolTable *SymbolTable = NewSymbolTable()
 
 // InstructionHandler type
 type InstructionHandler func(interface{}) error
 
-var handlers = map[ByteCodeInstruction]InstructionHandler{
-	PUSH:  push,
-	PUSHF: push,
-	PUSHM: push,
+var handlers = map[compiler.ByteCodeInstruction]InstructionHandler{
+	compiler.PUSH:  push,
+	compiler.PUSHF: push,
+	compiler.PUSHM: push,
 
-	ADDFF: addff,
-	ADDMM: addmm,
+	compiler.ADDFF: addff,
+	compiler.ADDMM: addmm,
 
-	SUBFF: subff,
-	SUBMM: submm,
+	compiler.SUBFF: subff,
+	compiler.SUBMM: submm,
 
-	MULFF: mulff,
-	MULFM: mulfm,
-	MULMF: mulmf,
+	compiler.MULFF: mulff,
+	compiler.MULFM: mulfm,
+	compiler.MULMF: mulmf,
 
-	DIVFF: divff,
-	DIVMF: divmf,
+	compiler.DIVFF: divff,
+	compiler.DIVMF: divmf,
 
-	SET: set,
+	compiler.SET: set,
 }
 
 // Execute executes ByteCode
-func (vm *VirtualMachine) Execute() (interface{}, error) {
-	for instruction := vm.ip.Next(); instruction != nil; instruction = instruction.Next() {
+func Execute(instructions []*compiler.Instruction) (interface{}, error) {
+	for _, instruction := range instructions {
 		handler, ok := handlers[instruction.Instruction]
 
 		if !ok {
-			return nil, ErrUnsupportedOperation
+			return nil, compiler.ErrUnsupportedOperation
 		}
 
 		handler(instruction.Argument)
@@ -66,7 +58,7 @@ func push(argument interface{}) error {
 	name, ok := argument.(string)
 
 	if ok {
-		value, err = symbolTable.Get(name)
+		value, err = VMSymbolTable.Get(name)
 
 		if err != nil {
 			return err
@@ -82,13 +74,13 @@ func set(argument interface{}) error {
 	name, ok := argument.(string)
 
 	if !ok {
-		return ErrNoSuchSymbol
+		return compiler.ErrNoSuchSymbol
 	}
 
 	stackSize := len(stack)
 	element := stack[stackSize-1]
 
-	symbolTable.Set(name, element)
+	VMSymbolTable.Set(name, element)
 
 	return nil
 }

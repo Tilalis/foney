@@ -1,9 +1,9 @@
-package interpreter
+package compiler
 
 import "strings"
 
-// InterpretString interpretes string, roses are red, sky is blue
-func InterpretString(input string) (interface{}, error) {
+// CompileString method
+func CompileString(input string) ([]*Instruction, error) {
 	reader := strings.NewReader(input)
 	lexer, err := NewLexer(reader)
 
@@ -29,5 +29,5 @@ func InterpretString(input string) (interface{}, error) {
 		return nil, err
 	}
 
-	return result, nil
+	return result.Load(), nil
 }

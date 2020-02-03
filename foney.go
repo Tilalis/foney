@@ -2,14 +2,15 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 
-	"foney/interpreter"
+	"github.com/Tilalis/foney/compiler"
+	"github.com/Tilalis/foney/interpreter"
+	"github.com/Tilalis/foney/vm"
 )
 
 func main() {
@@ -26,8 +27,7 @@ func main() {
 	var scanner *bufio.Scanner
 
 	if *inDebug {
-		// (1$ / 3) + (5$ * 2)  -- fails because of trailing space
-		scanner = bufio.NewScanner(strings.NewReader("a = 5\na*a + a"))
+		scanner = bufio.NewScanner(strings.NewReader("a = 1USD\na = a * 3"))
 	} else {
 		scanner = bufio.NewScanner(os.Stdin)
 	}
@@ -36,17 +36,9 @@ func main() {
 	for scanner.Scan() {
 		input = scanner.Text()
 
+		// INTERPRETER
 		t := time.Now()
 		result, err := interpreter.InterpretString(input)
-		fmt.Printf("    %s\n", time.Since(t))
-
-		if err != nil {
-			fmt.Printf("%v\n", err)
-		}
-
-		t = time.Now()
-		resultVM, err := interpreter.InterpretStringVM(input)
-		fmt.Printf("VM: %s\n", time.Since(t))
 
 		if err != nil {
 			fmt.Printf("%v\n", err)
@@ -56,9 +48,30 @@ func main() {
 			fmt.Printf("    %v\n", result)
 		}
 
-		if resultVM != nil {
-			fmt.Printf("VM: %v\n", resultVM)
+		fmt.Printf("    %s\n", time.Since(t))
+
+		// COMPILER + VM
+		t = time.Now()
+
+		code, err := compiler.CompileString(input)
+
+		if err != nil {
+			fmt.Printf("%v\n", err)
 		}
+
+		result, err = vm.Execute(code)
+
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+
+		if result != nil {
+			fmt.Printf("VM: %v\n", result)
+		}
+
+		fmt.Printf("VM: %s\n", time.Since(t))
+
+		// END
 
 		if *inDebug || *debug != "" {
 			if *inDebug || *debug == "lexer" || *debug == "all" {
@@ -74,51 +87,12 @@ func main() {
 			}
 
 			if *inDebug || *debug == "parser" || *debug == "all" {
-				lexer, err := interpreter.NewLexer(strings.NewReader(input))
-
-				if err != nil {
-					goto End
-				}
-
-				parser, err := interpreter.NewParser(lexer)
-
-				if err != nil && !errors.Is(err, interpreter.ErrUnsupportedOperation) {
-					goto End
-				}
-
-				node, err := parser.Parse()
-
-				if err != nil {
-					goto End
-				}
-
-				bytecode := &interpreter.Instruction{
-					Instruction: interpreter.NOP,
-				}
-
-				_, err = node.Compile(bytecode)
-
-				if err != nil {
-					fmt.Printf("%v\n", err)
-				}
-
-				loaded := bytecode.Load()
-
-				if err != nil {
-					fmt.Printf("%v\n", err)
-				} else {
-					for _, bc := range loaded {
-						if bc.Argument != nil {
-							fmt.Printf("%v %v\n", bc.Instruction, bc.Argument)
-						} else {
-							fmt.Println(bc.Instruction)
-						}
-					}
+				for _, codeItem := range code {
+					fmt.Printf("%v %v\n", codeItem.Instruction, codeItem.Argument)
 				}
 			}
 		}
 
-	End:
 		fmt.Print(prompt)
 	}
 }
