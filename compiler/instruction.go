@@ -1,7 +1,5 @@
 package compiler
 
-import "reflect"
-
 // ByteCodeInstruction represents instruction
 type ByteCodeInstruction int
 
@@ -85,17 +83,14 @@ type Instruction struct {
 }
 
 // NewInstruction creates instruction
-func NewInstruction(byteCode ByteCodeInstruction, argument interface{}) *Instruction {
+func NewInstruction(byteCode ByteCodeInstruction, argument interface{}, tokenType TokenType) *Instruction {
 	if argument != nil {
-		var typeOf = reflect.Indirect(reflect.ValueOf(argument)).Type()
-		var name = typeOf.Name()
-
-		switch name {
-		case "float64":
-			InstructionTypeInfo.Put(NUMBERTYPE)
-		case "Money":
-			InstructionTypeInfo.Put(MONEYTYPE)
-		case "string": // Symbol
+		switch tokenType {
+		case NUMBER:
+			InstructionTypeInfo.Put(TNUMBER)
+		case MONEY:
+			InstructionTypeInfo.Put(TMONEY)
+		case SYMBOL: // Symbol
 			ti, _ := InstructionTypeInfo.GetSymbolType(argument.(string))
 			InstructionTypeInfo.Put(ti)
 		}

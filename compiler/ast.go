@@ -22,7 +22,7 @@ type Number struct {
 
 // Traverse Number to Instruction
 func (n *Number) Traverse() (*Instruction, error) {
-	return NewInstruction(PUSHF, n.Token.Value), nil
+	return NewInstruction(PUSHF, n.Token.Value, n.Token.Type), nil
 }
 
 // Money represents Money
@@ -32,7 +32,7 @@ type Money struct {
 
 // Traverse Money to Instruction
 func (m *Money) Traverse() (*Instruction, error) {
-	return NewInstruction(PUSHM, m.Token.Value), nil
+	return NewInstruction(PUSHM, m.Token.Value, m.Token.Type), nil
 }
 
 // Symbol represents Symbol in AST
@@ -49,5 +49,5 @@ func (s *Symbol) Traverse() (*Instruction, error) {
 		return nil, ErrSyntaxError
 	}
 
-	return NewInstruction(PUSH, symbolName), nil
+	return NewInstruction(PUSH, symbolName, s.Token.Type), nil
 }

@@ -52,10 +52,10 @@ func (s *SymbolTable) Set(name string, value interface{}) {
 
 	switch typeName {
 	case "float64":
-		s.types[name] = compiler.NUMBERTYPE
+		s.types[name] = compiler.TNUMBER
 	case "Money":
-		s.types[name] = compiler.MONEYTYPE
+		s.types[name] = compiler.TMONEY
 	default:
-		s.types[name] = compiler.DYNAMIC
+		s.types[name] = compiler.TDYNAMIC
 	}
 }

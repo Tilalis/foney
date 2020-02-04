@@ -14,10 +14,11 @@ func (a *Assign) Traverse() (*Instruction, error) {
 		return nil, err
 	}
 
-	name := a.Symbol.Token.Value.(string)
+	token := a.Symbol.Token
+	name := token.Value.(string)
 
 	InstructionTypeInfo.PutSymbolType(name, InstructionTypeInfo.Last())
-	value.Append(NewInstruction(SET, name))
+	value.Append(NewInstruction(SET, name, token.Type))
 
 	return value, nil
 }

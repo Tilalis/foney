@@ -40,7 +40,7 @@ func (til *TypeInfoList) Put(info TypeInfo) {
 // Last TypeInfo
 func (til *TypeInfoList) Last() TypeInfo {
 	if til.size < 1 {
-		return DYNAMIC
+		return TDYNAMIC
 	}
 
 	return til.list[til.size-1]
@@ -51,7 +51,7 @@ func (til *TypeInfoList) GetSymbolType(name string) (TypeInfo, error) {
 	typeInfo, ok := til.vars[name]
 
 	if !ok {
-		return DYNAMIC, ErrNoSuchSymbol
+		return TDYNAMIC, ErrNoSuchSymbol
 	}
 
 	return typeInfo, nil
@@ -67,16 +67,16 @@ type TypeInfo int
 
 // TypeInfo
 const (
-	NUMBERTYPE TypeInfo = iota
-	MONEYTYPE
-	DYNAMIC
+	TNUMBER TypeInfo = iota
+	TMONEY
+	TDYNAMIC
 )
 
 func (ti TypeInfo) String() string {
 	name := map[TypeInfo]string{
-		NUMBERTYPE: "Number",
-		MONEYTYPE:  "Money",
-		DYNAMIC:    "<Dynamic>",
+		TNUMBER:  "Number",
+		TMONEY:   "Money",
+		TDYNAMIC: "<Dynamic>",
 	}[ti]
 
 	return name

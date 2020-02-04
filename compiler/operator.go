@@ -36,48 +36,48 @@ func (bo *BinaryOperator) Traverse() (*Instruction, error) {
 	switch bo.Operator.Type {
 	case PLUS:
 		switch {
-		case typeA == NUMBERTYPE && typeB == NUMBERTYPE:
+		case typeA == TNUMBER && typeB == TNUMBER:
 			instruction = ADDFF
-		case typeA == MONEYTYPE && typeB == MONEYTYPE:
+		case typeA == TMONEY && typeB == TMONEY:
 			instruction = ADDMM
 		}
 	case MINUS:
 		switch {
-		case typeA == NUMBERTYPE && typeB == NUMBERTYPE:
+		case typeA == TNUMBER && typeB == TNUMBER:
 			instruction = SUBFF
-		case typeA == MONEYTYPE && typeB == MONEYTYPE:
+		case typeA == TMONEY && typeB == TMONEY:
 			instruction = SUBMM
 		}
 	case MUL:
 		switch {
-		case typeA == NUMBERTYPE && typeB == NUMBERTYPE:
+		case typeA == TNUMBER && typeB == TNUMBER:
 			instruction = MULFF
-		case typeA == NUMBERTYPE && typeB == MONEYTYPE:
+		case typeA == TNUMBER && typeB == TMONEY:
 			instruction = MULFM
-		case typeA == MONEYTYPE && typeB == NUMBERTYPE:
+		case typeA == TMONEY && typeB == TNUMBER:
 			instruction = MULMF
 		}
 	case DIV:
 		switch {
-		case typeA == NUMBERTYPE && typeB == NUMBERTYPE:
+		case typeA == TNUMBER && typeB == TNUMBER:
 			instruction = DIVFF
-		case typeA == MONEYTYPE && typeB == NUMBERTYPE:
+		case typeA == TMONEY && typeB == TNUMBER:
 			instruction = DIVMF
 		}
 	}
 
 	if instruction == NOP {
-		return nil, fmt.Errorf("%w: %v between %v and %v", ErrUnsupportedOperation, bo.Operator.Value, NUMBERTYPE, MONEYTYPE)
+		return nil, fmt.Errorf("%w: %v between %v and %v", ErrUnsupportedOperation, bo.Operator.Value, TNUMBER, TMONEY)
 	}
 
 	switch instruction {
 	case ADDFF, SUBFF, MULFF, DIVFF:
-		InstructionTypeInfo.Put(NUMBERTYPE)
+		InstructionTypeInfo.Put(TNUMBER)
 	default:
-		InstructionTypeInfo.Put(MONEYTYPE)
+		InstructionTypeInfo.Put(TMONEY)
 	}
 
-	left.Append(NewInstruction(instruction, nil))
+	left.Append(NewInstruction(instruction, nil, EOF))
 	right.Append(left)
 
 	return right, nil
