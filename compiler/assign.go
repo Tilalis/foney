@@ -15,6 +15,8 @@ func (a *Assign) Traverse() (*Instruction, error) {
 	}
 
 	name := a.Symbol.Token.Value.(string)
+
+	InstructionTypeInfo.PutSymbolType(name, InstructionTypeInfo.Last())
 	value.Append(NewInstruction(SET, name))
 
 	return value, nil

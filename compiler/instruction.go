@@ -96,7 +96,8 @@ func NewInstruction(byteCode ByteCodeInstruction, argument interface{}) *Instruc
 		case "Money":
 			InstructionTypeInfo.Put(MONEYTYPE)
 		case "string": // Symbol
-			InstructionTypeInfo.Put(InstructionTypeInfo.Last())
+			ti, _ := InstructionTypeInfo.GetSymbolType(argument.(string))
+			InstructionTypeInfo.Put(ti)
 		}
 	}
 

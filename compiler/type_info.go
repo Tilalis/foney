@@ -5,12 +5,14 @@ import "fmt"
 // InstructionTypeInfo ???
 var InstructionTypeInfo = &TypeInfoList{
 	list: make([]TypeInfo, 0),
+	vars: make(map[string]TypeInfo, 0),
 	size: 0,
 }
 
 // TypeInfoList type
 type TypeInfoList struct {
 	list []TypeInfo
+	vars map[string]TypeInfo
 	size int
 }
 
@@ -29,7 +31,13 @@ func (til *TypeInfoList) Get() (a, b TypeInfo, err error) {
 	return
 }
 
-// Last Type Info
+// Put TypeInfo
+func (til *TypeInfoList) Put(info TypeInfo) {
+	til.list = append(til.list, info)
+	til.size++
+}
+
+// Last TypeInfo
 func (til *TypeInfoList) Last() TypeInfo {
 	if til.size < 1 {
 		return DYNAMIC
@@ -38,10 +46,20 @@ func (til *TypeInfoList) Last() TypeInfo {
 	return til.list[til.size-1]
 }
 
-// Put TypeInfo
-func (til *TypeInfoList) Put(info TypeInfo) {
-	til.list = append(til.list, info)
-	til.size++
+// GetSymbolType get symbol type
+func (til *TypeInfoList) GetSymbolType(name string) (TypeInfo, error) {
+	typeInfo, ok := til.vars[name]
+
+	if !ok {
+		return DYNAMIC, ErrNoSuchSymbol
+	}
+
+	return typeInfo, nil
+}
+
+// PutSymbolType put symbol type
+func (til *TypeInfoList) PutSymbolType(name string, ti TypeInfo) {
+	til.vars[name] = ti
 }
 
 // TypeInfo type
@@ -50,8 +68,8 @@ type TypeInfo int
 // TypeInfo
 const (
 	NUMBERTYPE TypeInfo = iota
-	MONEYTYPE  TypeInfo = iota
-	DYNAMIC    TypeInfo = iota
+	MONEYTYPE
+	DYNAMIC
 )
 
 func (ti TypeInfo) String() string {
