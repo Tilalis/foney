@@ -17,7 +17,8 @@ func main() {
 	const prompt = "foney> "
 
 	var (
-		debug   *string = flag.String("debug", "", "debug")
+		debug   *string = flag.String("debug", "", "debug: (lexer | parser | all)")
+		mode    *string = flag.String("mode", "vm", "mode: (vm | interpreter | compare)")
 		inDebug *bool   = flag.Bool("indebug", false, "indebug")
 		input   string
 	)
@@ -36,42 +37,70 @@ func main() {
 	for scanner.Scan() {
 		input = scanner.Text()
 
-		// INTERPRETER
-		t := time.Now()
-		result, err := interpreter.InterpretString(input)
+		if *mode == "vm" {
+			code, err := compiler.CompileString(input)
 
-		if err != nil {
-			fmt.Printf("%v\n", err)
+			if err != nil {
+				fmt.Printf("%v\n", err)
+			}
+
+			result, err := vm.Execute(code)
+
+			if err != nil {
+				fmt.Printf("%v\n", err)
+			}
+
+			if result != nil {
+				fmt.Printf("%v\n", result)
+			}
+		} else if *mode == "interpreter" {
+			result, err := interpreter.InterpretString(input)
+
+			if err != nil {
+				fmt.Printf("%v\n", err)
+			}
+
+			if result != nil {
+				fmt.Printf("%v\n", result)
+			}
+		} else if *mode == "compare" {
+			// INTERPRETER
+			t := time.Now()
+			result, err := interpreter.InterpretString(input)
+
+			if err != nil {
+				fmt.Printf("%v\n", err)
+			}
+
+			if result != nil {
+				fmt.Printf("    %v\n", result)
+			}
+
+			fmt.Printf("    %s\n", time.Since(t))
+
+			// COMPILER + VM
+			t = time.Now()
+
+			code, err := compiler.CompileString(input)
+
+			if err != nil {
+				fmt.Printf("%v\n", err)
+			}
+
+			result, err = vm.Execute(code)
+
+			if err != nil {
+				fmt.Printf("%v\n", err)
+			}
+
+			if result != nil {
+				fmt.Printf("VM: %v\n", result)
+			}
+
+			fmt.Printf("VM: %s\n", time.Since(t))
+
+			// END
 		}
-
-		if result != nil {
-			fmt.Printf("    %v\n", result)
-		}
-
-		fmt.Printf("    %s\n", time.Since(t))
-
-		// COMPILER + VM
-		t = time.Now()
-
-		code, err := compiler.CompileString(input)
-
-		if err != nil {
-			fmt.Printf("%v\n", err)
-		}
-
-		result, err = vm.Execute(code)
-
-		if err != nil {
-			fmt.Printf("%v\n", err)
-		}
-
-		if result != nil {
-			fmt.Printf("VM: %v\n", result)
-		}
-
-		fmt.Printf("VM: %s\n", time.Since(t))
-
-		// END
 
 		if *inDebug || *debug != "" {
 			if *inDebug || *debug == "lexer" || *debug == "all" {
@@ -87,8 +116,12 @@ func main() {
 			}
 
 			if *inDebug || *debug == "parser" || *debug == "all" {
-				for _, codeItem := range code {
-					fmt.Printf("%v %v\n", codeItem.Instruction, codeItem.Argument)
+				code, err := compiler.CompileString(input)
+
+				if err != nil {
+					for _, codeItem := range code {
+						fmt.Printf("%v %v\n", codeItem.Instruction, codeItem.Argument)
+					}
 				}
 			}
 		}
